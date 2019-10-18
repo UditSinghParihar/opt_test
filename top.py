@@ -250,6 +250,49 @@ def keyPoses(xN, yN, tN, X, Y, THETA, src, trg):
 
 	return (xNK, yNK, tNK, XK, YK, THETAK, srcK, trgK)
 
+def submaps(xOpt,yOpt,tOpt):
+
+	#print len(xOpt)
+
+	#(xOptN,yOptN,tOptN) = addNoise(xOpt,yOpt,tOpt)
+	(src, trg) = readLoops(fileLoops)
+	
+	submaps = []
+	
+	(xNK, yNK, tNK, XK, YK, THETAK, srcK, trgK) = keyPoses(xN, yN, tN, X, Y, THETA, src, trg)
+
+	print src,trg
+	
+	for i in range(len(src)):
+	# for i in range(2):
+
+		idx = src[i]
+		poses = []
+
+		while idx <= trg[i] and idx >= src[i]:
+
+			poses.append((xN[idx],yN[idx],tN[idx]))
+			idx += 1
+
+		submaps.append(poses)
+
+	#print len(submaps[i])
+
+	for i in range(len(submaps)):
+
+		if i  == len(submaps)-1:
+
+			submaps[i].insert(0,(xOpt[0],yOpt[0],tOpt[0]))
+			submaps[i].insert(len(submaps[i])-1,(xOpt[1],yOpt[1],tOpt[1]))
+
+		else:
+			submaps[i].insert(0,(xOpt[i+1],yOpt[i+1],tOpt[i+1]))
+			submaps[i].insert(len(submaps[i])-1,(xOpt[i+1],yOpt[i+1],tOpt[i+1]))
+
+	#print len(submaps[i])
+
+	return submaps
+
 
 def	optParts(xN, yN, tN, fileLoops, X, Y, THETA):
 	(src, trg) = readLoops(fileLoops)
