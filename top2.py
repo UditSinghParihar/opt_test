@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 import os
-import time
 
 
 def read(fileName):
@@ -222,95 +221,45 @@ def writeLoops(X, Y, THETA, g2o, src, trg, noise):
 	g2o.close()
 
 
-def drawOpt(xOpt, yOpt, src, trg):
-	xKOpt = []; yKOpt = []
-	for i in range(len(src)):
-		xKOpt.append(xOpt[src[i]]); yKOpt.append(yOpt[src[i]]); xKOpt.append(xOpt[trg[i]]); yKOpt.append(yOpt[trg[i]])
-
-	plt.plot(xOpt, yOpt, 'ro', markersize=3)
-	plt.plot(xOpt, yOpt, 'k-', markersize=2)
-	plt.plot(xKOpt, yKOpt, 'gs', markersize=7)
-
-	plt.show()
-
-
-def optWhole(xN, yN, tN, src, trg, X, Y, THETA):
+def optWhole(xN, yN, tN, fileLoops, X, Y, THETA):
 	g2o = writeOdom(xN, yN, tN)
 	
-	# (src, trg) = readLoops(fileLoops)
-	# drawKey(src, trg, xN, yN)
-
+	(src, trg) = readLoops(fileLoops)
 	noise = 0.1
 	writeLoops(X, Y, THETA, g2o, src, trg, noise)
 	
 	optimize()
 	(xOpt, yOpt, tOpt) = readG2o("opt.g2o")
-	# drawOpt(xOpt, yOpt, src, trg)
-	# draw(xOpt, yOpt, tOpt, "Noisy_optimized", thetaPlot=False)
-
-	return (xOpt, yOpt, tOpt)
+	draw(xOpt, yOpt, tOpt, "Noisy_optimized", thetaPlot=False)
 
 
 def keyPoses(xN, yN, tN, X, Y, THETA, src, trg):
 	poses = []
 	for i in range(len(src)):
-		poses.append((src[i], xN[src[i]], yN[src[i]], tN[src[i]], X[src[i]], Y[src[i]], THETA[src[i]]))
-		poses.append((trg[i], xN[trg[i]], yN[trg[i]], tN[trg[i]], X[trg[i]], Y[trg[i]], THETA[trg[i]]))
+		poses.append((src[i], xN[src[i]], yN[src[i]], tN[src[i]], X[src[i]], Y[src[i]], THETA[src[i]])); poses.append((trg[i], xN[trg[i]], yN[trg[i]], tN[trg[i]], X[trg[i]], Y[trg[i]], THETA[trg[i]]))
 	poses = sorted(set(poses))
 
 	iK = []; xNK = []; yNK = []; tNK = []; XK = []; YK = []; THETAK = []
 	for p in poses:
-		iK.append(p[0]); 
-		xNK.append(p[1]); yNK.append(p[2]); tNK.append(p[3]) 
-		XK.append(p[4]); YK.append(p[5]); THETAK.append(p[6])
+		iK.append(p[0]); xNK.append(p[1]); yNK.append(p[2]); tNK.append(p[3]); XK.append(p[4]); YK.append(p[5]); THETAK.append(p[6])
 
 	srcK = []; trgK = []
 
 	for i in range(len(src)):
 		srcK.append(iK.index(src[i])); trgK.append(iK.index(trg[i]))	
 
-	return (iK, xNK, yNK, tNK, XK, YK, THETAK, srcK, trgK)
+	return (xNK, yNK, tNK, XK, YK, THETAK, srcK, trgK)
 
 
-def drawLoops(xNK, yNK, xN, yN, srcK, trgK):
-	fig = plt.figure()
-
-	plt.plot(xN, yN, 'ro', markersize=3)
-	plt.plot(xN, yN, 'k-', markersize=2)
-	plt.plot(xNK, yNK, 'gs', markersize=7)
-
-	for i in range(len(srcK)):
-		x1 = xNK[srcK[i]]; x2 = xNK[trgK[i]]; y1 = yNK[srcK[i]]; y2 = yNK[trgK[i]]
-		plt.plot([x1, x2], [y1, y2], 'm--')
-
-	# print(srcK)
-	plt.show()
-
-
-# def drawNK(xNK, yNK, srcK, trgK):
-# 	fig3 = plt.figure()
-
-# 	plt.plot(xNK, yNK, 'ro', markersize=5)
-# 	plt.plot(xNK, yNK, 'k-', markersize=2)
-
-# 	for i in range(len(srcK)):
-# 		x1 = xNK[srcK[i]]; x2 = xNK[trgK[i]]; y1 = yNK[srcK[i]]; y2 = yNK[trgK[i]]
-# 		plt.plot([x1, x2], [y1, y2], 'm--')
-
-# 	plt.show()
-
-
-def	optParts(xN, yN, tN, src, trg, X, Y, THETA):
+def	optParts(xN, yN, tN, fileLoops, X, Y, THETA):
 	(src, trg) = readLoops(fileLoops)
 
-	(iK, xNK, yNK, tNK, XK, YK, THETAK, srcK, trgK) = keyPoses(xN, yN, tN, X, Y, THETA, src, trg)
-	# drawLoops(XK, YK, X, Y, srcK, trgK)
-	# drawLoops(xNK, yNK, xN, yN, srcK, trgK)
-	# drawLoops(xNK, yNK, xNK, yNK, srcK, trgK)
-	
+	(xNK, yNK, tNK, XK, YK, THETAK, srcK, trgK) = keyPoses(xN, yN, tN, X, Y, THETA, src, trg)
+	draw(xNK, yNK, tNK, "Noisy_keypoints", thetaPlot=True)
+
 	g2o = writeOdom(xNK, yNK, tNK)
 	noise = 0.01
-	writeLoops(XK, YK, THETAK, g2o, srcK, trgK, noise)
+	writeLoops(XK, YK, THETAK, g2o, srcK, trgK, noise)	
 
 	optimize()
 	(xOpt, yOpt, tOpt) = readG2o("opt.g2o")
@@ -318,161 +267,22 @@ def	optParts(xN, yN, tN, src, trg, X, Y, THETA):
 	return (xOpt, yOpt, tOpt)
 
 
-def drawSubmaps(submaps):
-	fig = plt.figure()
-
-	for i in range(len(submaps)):
-		print("Submap number: %d" % (i))
-		X = []
-		Y = []
-		T = []
-		for j in range(len(submaps[i])):
-
-			X.append(submaps[i][j][0])
-			Y.append(submaps[i][j][1])
-			T.append(submaps[i][j][2])
-
-		plt.plot(X[0], Y[0],'bo', markersize=10)
-		plt.plot(X[-1], Y[-1],'bo', markersize=10)
-		plt.plot(X[1:-1],Y[1:-1],'ro')
-		plt.axis([-5, 15.5, -12.5, 9])
-		plt.show()
-		
-
-def getSubmaps(xOpt, yOpt, tOpt):
-
-	(src, trg) = readLoops(fileLoops)
-	
-	submaps = []
-	
-	(iK, xNK, yNK, tNK, XK, YK, THETAK, srcK, trgK) = keyPoses(xN, yN, tN, X, Y, THETA, src, trg)
-
-	for i in range(len(iK)-1):
-	
-		idx = iK[i]
-		poses = []
-
-		while idx <= iK[i+1] and idx >= iK[i]:
-
-			poses.append((xN[idx],yN[idx],tN[idx]))
-			idx += 1
-
-		submaps.append(poses)
-
-	for i in range(len(submaps)):
-		submaps[i].insert(0,(xOpt[i],yOpt[i],tOpt[i]))
-		submaps[i].append((xOpt[i+1],yOpt[i+1],tOpt[i+1]))
-
-	return submaps
-
-
-def writeSubmapG2o(sm):
-	g2o = open('noise.g2o', 'w')
-
-	for i in range(len(sm)):
-		x = sm[i][0]; y = sm[i][1]; theta = sm[i][2]
-
-		line = "VERTEX_SE2 " + str(i) + " " + str(x) + " " + str(y) + " " + str(theta) + "\n"
-		g2o.write(line)
-
-	# Odometry
-	g2o.write("\n# Odometry constraints\n\n")
-	info_mat = "500.0 0.0 0.0 500.0 0.0 500.0"
-	for i in range(2, len(sm)-1):
-		p1 = (sm[i-1][0], sm[i-1][1], sm[i-1][2])
-		p2 = (sm[i][0], sm[i][1], sm[i][2])
-		T1_w = np.array([[math.cos(p1[2]), -math.sin(p1[2]), p1[0]], [math.sin(p1[2]), math.cos(p1[2]), p1[1]], [0, 0, 1]])
-		T2_w = np.array([[math.cos(p2[2]), -math.sin(p2[2]), p2[0]], [math.sin(p2[2]), math.cos(p2[2]), p2[1]], [0, 0, 1]])
-		T2_1 = np.dot(np.linalg.inv(T1_w), T2_w)
-		del_x = str(T2_1[0][2])
-		del_y = str(T2_1[1][2])
-		del_theta = str(math.atan2(T2_1[1, 0], T2_1[0, 0]))
-		
-		line = "EDGE_SE2 "+str(i-1)+" "+str(i)+" "+del_x+" "+del_y+" "+del_theta+" "+info_mat + "\n"
-		g2o.write(line)
-
-	g2o.write("FIX 0\n")
-
-	# Loop constraints
-	g2o.write("\n\n# Loop constraints\n\n")
-	info_mat = "700.0 0.0 0.0 700.0 0.0 700.0"
-
-	del_x = str(0); del_y = str(0); del_theta = str(0)
-	line1 = "EDGE_SE2 "+str(0)+" "+str(1)+" "+del_x+" "+del_y+" "+del_theta+" "+info_mat+"\n"
-	line2 = "EDGE_SE2 "+str(len(sm)-2)+" "+str(len(sm)-1)+" "+del_x+" "+del_y+" "+del_theta+" "+info_mat+"\n"
-	g2o.write(line1)
-	g2o.write(line2)
-
-	p1 = (sm[0][0], sm[0][1], sm[0][2])
-	p2 = (sm[-1][0], sm[-1][1], sm[-1][2])
-	T1_w = np.array([[math.cos(p1[2]), -math.sin(p1[2]), p1[0]], [math.sin(p1[2]), math.cos(p1[2]), p1[1]], [0, 0, 1]])
-	T2_w = np.array([[math.cos(p2[2]), -math.sin(p2[2]), p2[0]], [math.sin(p2[2]), math.cos(p2[2]), p2[1]], [0, 0, 1]])
-	T2_1 = np.dot(np.linalg.inv(T1_w), T2_w)
-	del_x = str(T2_1[0][2])
-	del_y = str(T2_1[1][2])
-	del_theta = str(math.atan2(T2_1[1, 0], T2_1[0, 0]))
-
-	line = "EDGE_SE2 "+str(0)+" "+str(len(sm)-1)+" "+del_x+" "+del_y+" "+del_theta+" "+info_mat+"\n"
-	g2o.write(line)	
-
-	g2o.close()
-
-
-def drawSubmap(X, Y):
-	plt.plot(X[0], Y[0],'bo', markersize=10)
-	plt.plot(X[-1], Y[-1],'bo', markersize=10)
-	plt.plot(X,Y,'ro')
-	plt.axis([-10, 15.5, -12.5, 9])
-	plt.show()
-
-
-def optSubmaps(submaps):
-	X = []; Y = []; THETA = []
-
-	for i in range(len(submaps)):
-		# drawSubmaps([submaps[i]])
-
-		writeSubmapG2o(submaps[i])
-
-		optimize()
-		(xOpt, yOpt, tOpt) = readG2o("opt.g2o")
-		# drawSubmap(xOpt, yOpt)
-
-		X = X + xOpt; Y = Y + yOpt; THETA = THETA + tOpt
-
-	# draw(X, Y, THETA, "Submaps_Concatanated", thetaPlot=False)
-
-
 if __name__ == '__main__':
 	filePoses = str(argv[1])
 	fileLoops = str(argv[2])
 	(X, Y, THETA) = read(filePoses)
-	(src, trg) = readLoops(fileLoops)
 
 	X = X[0:-1:20]; Y = Y[0:-1:20]; THETA = THETA[0:-1:20]
 	THETA = getTheta(X, Y)
-	# draw(X, Y, THETA, "GroundTruth", thetaPlot=False)
+	draw(X, Y, THETA, "GroundTruth", thetaPlot=False)
 
 	# drawId(X, Y)
 
 	np.random.seed(42)
 	(xN, yN, tN) = addNoise(X, Y, THETA)
-	# draw(xN, yN, tN, "Noise_full", thetaPlot=False)
+	draw(xN, yN, tN, "Noise_full", thetaPlot=False)
 
-	# t0 = time.time()	
-	# (xWOpt, yWOpt, tWOpt) = optWhole(xN, yN, tN, src, trg, X, Y, THETA)
-	# t1 = time.time()
-	# print(t1-t0)
-	# drawOpt(xWOpt, yWOpt, src, trg)
+	optWhole(xN, yN, tN, fileLoops, X, Y, THETA)
 
-	t0 = time.time()
-	(xOpt, yOpt, tOpt) = optParts(xN, yN, tN, src, trg, X, Y, THETA)
-	# draw(xOpt, yOpt, tOpt, "Noisy_keypoints_optimized", thetaPlot=True)
-
-	submaps = getSubmaps(xOpt, yOpt, tOpt)
-	# drawSubmaps(submaps)
-
-	optSubmaps(submaps)
-	t1 = time.time()
-
-	print(t1-t0)
+	(xOpt, yOpt, tOpt) = optParts(xN, yN, tN, fileLoops, X, Y, THETA)
+	draw(xOpt, yOpt, tOpt, "Noisy_keypoints_optimized", thetaPlot=True)
