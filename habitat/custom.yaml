@@ -1,16 +1,17 @@
 ENVIRONMENT:
-  MAX_EPISODE_STEPS: 500
+  MAX_EPISODE_STEPS: 10000
 SIMULATOR:
+  SCENE: data/scene_datasets/Carpendale.glb
   AGENT_0:
-    SENSORS: ['RGB_SENSOR']
+    SENSORS: ['RGB_SENSOR','DEPTH_SENSOR']
   HABITAT_SIM_V0:
     GPU_DEVICE_ID: 0
   RGB_SENSOR:
-    WIDTH: 256
-    HEIGHT: 256
+    WIDTH: 512
+    HEIGHT: 512
   DEPTH_SENSOR:
-    WIDTH: 256
-    HEIGHT: 256
+    WIDTH: 512
+    HEIGHT: 512
 TASK:
   TYPE: Nav-v0
   SUCCESS_DISTANCE: 0.2
@@ -25,7 +26,9 @@ TASK:
   SPL:
     TYPE: SPL
     SUCCESS_DISTANCE: 0.2
+
 DATASET:
   TYPE: PointNav-v1
   SPLIT: train
   DATA_PATH: data/datasets/pointnav/gibson/v1/{split}/{split}.json.gz
+  SCENES_DIR: "data/scene_datasets/habitat-test-scenes/"
