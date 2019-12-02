@@ -30,5 +30,5 @@ TASK:
 DATASET:
   TYPE: PointNav-v1
   SPLIT: train
-  DATA_PATH: data/datasets/pointnav/gibson/v1/{split}/{split}.json.gz
+  DATA_PATH: data/datasets/pointnav/habitat-test-scenes/v1/{split}/{split}.json.gz
   SCENES_DIR: "data/scene_datasets/habitat-test-scenes/"
